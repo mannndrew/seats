@@ -4,12 +4,20 @@
 <meta charset="UTF-8">
 <title>Wedding Seating Lookup</title>
 <style>
+
+    /* Prevent horizontal scrolling */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
     body {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 20px 10px;
         text-align: center;
         background: #fafafa;
+        box-sizing: border-box;
     }
 
     h1 {
@@ -23,19 +31,21 @@
         margin-bottom: 20px;
     }
 
-    /* Sticky search bar */
+    /* Large, mobile-friendly search bar */
     #searchBox {
         width: 100%;
-        padding: 14px;
-        font-size: 18px;
-        border-radius: 10px;
+        padding: 18px;
+        font-size: 20px;
+        border-radius: 12px;
         border: 1px solid #bbb;
         margin-bottom: 20px;
         position: sticky;
         top: 0;
         z-index: 10;
         background: white;
+        height: 58px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        box-sizing: border-box;
     }
 
     ul {
@@ -64,49 +74,61 @@
         transform: scale(1.01);
     }
 
-    #details {
-        margin-top: 30px;
-        padding: 20px;
+    /* ---------- MODAL POPUP ---------- */
+    #modalOverlay {
         display: none;
-        border-radius: 14px;
-        background: white;
-        border: 1px solid #ddd;
-        max-width: 650px;
-        margin-left: auto;
-        margin-right: auto;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        animation: fadein 0.3s ease;
-    }
-
-    #details h2 {
-        margin-top: 0;
-        font-size: 24px;
-    }
-
-    #details p {
-        font-size: 18px;
-        margin-bottom: 20px;
-    }
-
-    #details img {
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        max-width: 1000px;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    #modalBox {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        max-width: 95%;
+        width: 800px;
+        text-align: center;
+        animation: fadein 0.25s ease;
+        position: relative;
+    }
+
+    #modalBox h2 {
+        margin-top: 0;
+    }
+
+    #modalBox img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
         margin-top: 15px;
-        border-radius: 12px;
+    }
+
+    /* Close (X) button */
+    #closeBtn {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-size: 26px;
+        cursor: pointer;
+        color: #666;
+    }
+    #closeBtn:hover {
+        color: black;
     }
 
     @keyframes fadein {
-        from { opacity: 0; transform: translateY(5px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
     }
 
-    /* Mobile adjustments */
-    @media (max-width: 480px) {
-        h1 { font-size: 24px; }
-        li { font-size: 16px; padding: 12px; }
-        #details h2 { font-size: 20px; }
-        #details p { font-size: 16px; }
-    }
 </style>
 </head>
 <body>
@@ -118,14 +140,19 @@
 
 <ul id="guestList"></ul>
 
-<div id="details"></div>
+<!-- Modal Popup -->
+<div id="modalOverlay">
+    <div id="modalBox">
+        <div id="closeBtn">&times;</div>
+        <div id="modalContent"></div>
+    </div>
+</div>
 
 <script>
 // --------------------
-// EDIT GUEST LIST HERE
+// GUEST LIST
 // --------------------
 const guests = [
-  // Table 1
   { name: "Kaniz Fatema", tables: [1] },
   { name: "Rezaul Karim", tables: [1] },
   { name: "Monish Saha", tables: [1] },
@@ -133,7 +160,6 @@ const guests = [
   { name: "Shomik Saha", tables: [1] },
   { name: "Shaheen’s Mom", tables: [1] },
 
-  // Table 2
   { name: "Asif Reza", tables: [2] },
   { name: "Sahinaz Reza", tables: [2] },
   { name: "Tabassum Ahmed", tables: [2] },
@@ -141,7 +167,6 @@ const guests = [
   { name: "Munira Begum", tables: [2] },
   { name: "Mr. Azam", tables: [2] },
 
-  // Table 3
   { name: "Bill Carroll", tables: [3] },
   { name: "Bill Meszko", tables: [3] },
   { name: "Melissa Meszko", tables: [3] },
@@ -150,14 +175,12 @@ const guests = [
   { name: "Mai Dinh", tables: [3] },
   { name: "Emmanuel Chinwabu", tables: [3] },
 
-  // Table 4
   { name: "Tytus Yarbrough", tables: [4] },
   { name: "Jessica Nwankwo", tables: [4] },
   { name: "Stefanie Huynh", tables: [4] },
   { name: "Shah Fabian", tables: [4] },
   { name: "Atharva Vyas", tables: [4] },
 
-  // Table 5
   { name: "Juliet Cuin", tables: [5] },
   { name: "Kaven Castor", tables: [5] },
   { name: "Johanna Valez", tables: [5] },
@@ -165,7 +188,6 @@ const guests = [
   { name: "Nadia Thonu", tables: [5] },
   { name: "Masma Noori", tables: [5] },
 
-  // Table 6
   { name: "Craig Howard", tables: [6] },
   { name: "Diane Howard", tables: [6] },
   { name: "Steven Howard", tables: [6] },
@@ -173,7 +195,6 @@ const guests = [
   { name: "Elaine Buckley", tables: [6] },
   { name: "Dennis", tables: [6] },
 
-  // Table 7
   { name: "JT Garred", tables: [7] },
   { name: "Sarah Garred", tables: [7] },
   { name: "Aram Meador", tables: [7] },
@@ -182,7 +203,6 @@ const guests = [
   { name: "Gisselle Ramirez", tables: [7] },
   { name: "Diego Aguilera", tables: [7] },
 
-  // Table 8
   { name: "Larry Howard", tables: [8] },
   { name: "Matt Cummings", tables: [8] },
   { name: "Kristen Cummings", tables: [8] },
@@ -190,36 +210,32 @@ const guests = [
   { name: "Karsyn Cummings", tables: [8] },
   { name: "Korie Cummings", tables: [8] },
 
-  // Table 9
   { name: "Brett Howard", tables: [9] },
   { name: "Barbara Howard", tables: [9] },
   { name: "Brittany Dempsey", tables: [9] },
   { name: "Clayton Dempsey", tables: [9] },
   { name: "Henry Dempsey", tables: [9] },
 
-  // Head Table (0)
   { name: "Rezwana Karim Roza", tables: [0] },
   { name: "Andrew Howard", tables: [0] },
   { name: "Rafia Risha", tables: [0] },
-  { name: "Abigail Morante", tables: [0, 4] },
+  { name: "Abigail Morante", tables: [0,4] },
   { name: "Megha Patel", tables: [0] },
   { name: "Zarrah Shahjahan", tables: [0] },
-  { name: "Adrija Zaman Vyas", tables: [0, 4] },
+  { name: "Adrija Zaman Vyas", tables: [0,4] },
   { name: "Cameron Howard", tables: [0] },
-  { name: "Karl Dempsey", tables: [0, 9] },
+  { name: "Karl Dempsey", tables: [0,9] },
   { name: "Brett Hutton", tables: [0] },
   { name: "James Revette", tables: [0] }
 ];
 
-// -------------
+// --------------------
 // TABLE IMAGES
-// -------------
+// --------------------
 function getTableImage(tables) {
-    // Handle special two-table combinations
     if (arraysMatch(tables, [0, 4])) return "images/table_head_4.jpg";
     if (arraysMatch(tables, [0, 9])) return "images/table_head_9.jpg";
 
-    // Handle normal single tables
     if (tables.length === 1) {
         const t = tables[0];
         if (t === 0) return "images/table_head.jpg";
@@ -229,54 +245,55 @@ function getTableImage(tables) {
     return "images/table_default.jpg";
 }
 
-// Helper: checks if two arrays match exactly
 function arraysMatch(a, b) {
-    return a.length === b.length &&
-           a.every((val, index) => val === b[index]);
+    return a.length === b.length && a.every((v, i) => v === b[i]);
 }
 
-// ------------------------------
-// POPULATE GUEST LIST INITIALLY
-// ------------------------------
+// --------------------
+// POPULATE LIST
+// --------------------
 const guestList = document.getElementById("guestList");
 const searchBox = document.getElementById("searchBox");
-const detailsDiv = document.getElementById("details");
+const modalOverlay = document.getElementById("modalOverlay");
+const modalContent = document.getElementById("modalContent");
 
-function renderList(filter = "") {
+function renderList(filter="") {
     guestList.innerHTML = "";
 
     guests
         .filter(g => g.name.toLowerCase().includes(filter.toLowerCase()))
-        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort((a,b) => a.name.localeCompare(b.name))
         .forEach(guest => {
             const li = document.createElement("li");
             li.textContent = guest.name;
-            li.onclick = () => showDetails(guest);
+            li.onclick = () => showModal(guest);
             guestList.appendChild(li);
         });
 }
 
-function showDetails(guest) {
-    let tableText = guest.tables
+function showModal(guest) {
+    const tableText = guest.tables
         .map(t => (t === 0 ? "Head Table" : `Table ${t}`))
         .join(" & ");
 
-    let images = `<img src="${getTableImage(guest.tables)}" alt="Table Layout" />`;
-
-    detailsDiv.innerHTML = `
+    modalContent.innerHTML = `
         <h2>${guest.name}</h2>
-        <p><strong>Tables:</strong> ${tableText}</p>
-        ${images}
+        <p><strong>${tableText}</strong></p>
+        <img src="${getTableImage(guest.tables)}" />
     `;
-    detailsDiv.style.display = "block";
+
+    modalOverlay.style.display = "flex";
 }
 
-// Filter list when typing
-searchBox.addEventListener("input", () => {
-    renderList(searchBox.value);
-});
+document.getElementById("closeBtn").onclick = () => {
+    modalOverlay.style.display = "none";
+};
 
-// Initial render
+modalOverlay.onclick = (e) => {
+    if (e.target === modalOverlay) modalOverlay.style.display = "none";
+};
+
+searchBox.addEventListener("input", () => renderList(searchBox.value));
 renderList();
 </script>
 

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wedding Seating Lookup</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        text-align: center;
+    }
+    input {
+        width: 90%;
+        padding: 12px;
+        font-size: 18px;
+        border-radius: 8px;
+        border: 1px solid #bbb;
+        margin-bottom: 20px;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        width: 90%;
+        margin: auto;
+        text-align: left;
+    }
+    li {
+        padding: 12px;
+        background: #f4f4f4;
+        margin: 6px 0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    li:hover {
+        background: #eaeaea;
+    }
+    #details {
+        margin-top: 30px;
+        padding: 20px;
+        display: none;
+        border-radius: 12px;
+        background: #fdfdfd;
+        border: 1px solid #ddd;
+    }
+    #details img {
+        width: 100%;
+        max-width: 1200px;
+        margin-top: 15px;
+        border-radius: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Find Your Seat</h1>
+<p>Search for your name and tap to view your table.</p>
+
+<input id="searchBox" placeholder="Type your name..." />
+
+<ul id="guestList"></ul>
+
+<div id="details"></div>
+
+<script>
+// --------------------
+// EDIT GUEST LIST HERE
+// --------------------
+const guests = [
+  // Table 1
+  { name: "Kaniz Fatema", tables: [1] },
+  { name: "Rezaul Karim", tables: [1] },
+  { name: "Monish Saha", tables: [1] },
+  { name: "Shaheen Shahanaz", tables: [1] },
+  { name: "Shomik Saha", tables: [1] },
+  { name: "Shaheen’s Mom", tables: [1] },
+
+  // Table 2
+  { name: "Asif Reza", tables: [2] },
+  { name: "Sahinaz Reza", tables: [2] },
+  { name: "Tabassum Ahmed", tables: [2] },
+  { name: "Sayef Rahim", tables: [2] },
+  { name: "Munira Begum", tables: [2] },
+  { name: "Mr. Azam", tables: [2] },
+
+  // Table 3
+  { name: "Bill Carroll", tables: [3] },
+  { name: "Bill Meszko", tables: [3] },
+  { name: "Melissa Meszko", tables: [3] },
+  { name: "Thomas Anderson", tables: [3] },
+  { name: "Bryce Berrett", tables: [3] },
+  { name: "Mai Dinh", tables: [3] },
+  { name: "Emmanuel Chinwabu", tables: [3] },
+
+  // Table 4
+  { name: "Tytus Yarbrough", tables: [4] },
+  { name: "Jessica Nwankwo", tables: [4] },
+  { name: "Stefanie Huynh", tables: [4] },
+  { name: "Shah Fabian", tables: [4] },
+  { name: "Atharva Vyas", tables: [4] },
+
+  // Table 5
+  { name: "Juliet Cuin", tables: [5] },
+  { name: "Kaven Castor", tables: [5] },
+  { name: "Johanna Valez", tables: [5] },
+  { name: "Christopher Castillo", tables: [5] },
+  { name: "Nadia Thonu", tables: [5] },
+  { name: "Masma Noori", tables: [5] },
+
+  // Table 6
+  { name: "Craig Howard", tables: [6] },
+  { name: "Diane Howard", tables: [6] },
+  { name: "Steven Howard", tables: [6] },
+  { name: "Dean Buckley", tables: [6] },
+  { name: "Elaine Buckley", tables: [6] },
+  { name: "Dennis", tables: [6] },
+
+  // Table 7
+  { name: "JT Garred", tables: [7] },
+  { name: "Sarah Garred", tables: [7] },
+  { name: "Aram Meador", tables: [7] },
+  { name: "Kristen Meador", tables: [7] },
+  { name: "Noah Millam", tables: [7] },
+  { name: "Gisselle Ramirez", tables: [7] },
+  { name: "Diego Aguilera", tables: [7] },
+
+  // Table 8
+  { name: "Larry Howard", tables: [8] },
+  { name: "Matt Cummings", tables: [8] },
+  { name: "Kristen Cummings", tables: [8] },
+  { name: "Ruthie Cummings", tables: [8] },
+  { name: "Karsyn Cummings", tables: [8] },
+  { name: "Korie Cummings", tables: [8] },
+
+  // Table 9
+  { name: "Brett Howard", tables: [9] },
+  { name: "Barbara Howard", tables: [9] },
+  { name: "Brittany Dempsey", tables: [9] },
+  { name: "Clayton Dempsey", tables: [9] },
+  { name: "Henry Dempsey", tables: [9] },
+
+  // Head Table (0)
+  { name: "Rezwana Karim Roza", tables: [0] },
+  { name: "Andrew Howard", tables: [0] },
+  { name: "Rafia Risha", tables: [0] },
+  { name: "Abigail Morante", tables: [0, 4] },
+  { name: "Megha Patel", tables: [0] },
+  { name: "Zarrah Shahjahan", tables: [0] },
+  { name: "Adrija Zaman Vyas", tables: [0, 4] },
+  { name: "Cameron Howard", tables: [0] },
+  { name: "Karl Dempsey", tables: [0, 9] },
+  { name: "Brett Hutton", tables: [0] },
+  { name: "James Revette", tables: [0] }
+];
+
+// -------------
+// TABLE IMAGES
+// -------------
+function getTableImage(tables) {
+    // Handle special two-table combinations
+    if (arraysMatch(tables, [0, 4])) return "images/table_head_4.jpg";
+    if (arraysMatch(tables, [0, 9])) return "images/table_head_9.jpg";
+
+    // Handle normal single tables
+    if (tables.length === 1) {
+        const t = tables[0];
+        if (t === 0) return "images/table_head.jpg";
+        if (t >= 1 && t <= 9) return `images/table_${t}.jpg`;
+    }
+
+    return "images/table_default.jpg";
+}
+
+// Helper: checks if two arrays match exactly
+function arraysMatch(a, b) {
+    return a.length === b.length &&
+           a.every((val, index) => val === b[index]);
+}
+
+// ------------------------------
+// POPULATE GUEST LIST INITIALLY
+// ------------------------------
+const guestList = document.getElementById("guestList");
+const searchBox = document.getElementById("searchBox");
+const detailsDiv = document.getElementById("details");
+
+function renderList(filter = "") {
+    guestList.innerHTML = "";
+
+    guests
+        .filter(g => g.name.toLowerCase().includes(filter.toLowerCase()))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(guest => {
+            const li = document.createElement("li");
+            li.textContent = guest.name;
+            li.onclick = () => showDetails(guest);
+            guestList.appendChild(li);
+        });
+}
+
+function showDetails(guest) {
+    let tableText = guest.tables
+        .map(t => (t === 0 ? "Head Table" : `Table ${t}`))
+        .join(" & ");
+
+    let images = `<img src="${getTableImage(guest.tables)}" alt="Table Layout" />`;
+
+    detailsDiv.innerHTML = `
+        <h2>${guest.name}</h2>
+        <p><strong>Tables:</strong> ${tableText}</p>
+        ${images}
+    `;
+    detailsDiv.style.display = "block";
+}
+
+// Filter list when typing
+searchBox.addEventListener("input", () => {
+    renderList(searchBox.value);
+});
+
+// Initial render
+renderList();
+</script>
+
+</body>
+</html>

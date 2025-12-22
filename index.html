@@ -239,6 +239,7 @@ const guests = [
 ];
 
 function getTableImage(tables) {
+    if (JSON.stringify(tables) === JSON.stringify([0,3])) return "images/table_head_3.jpg";
     if (JSON.stringify(tables) === JSON.stringify([0,4])) return "images/table_head_4.jpg";
     if (JSON.stringify(tables) === JSON.stringify([0,9])) return "images/table_head_9.jpg";
 
